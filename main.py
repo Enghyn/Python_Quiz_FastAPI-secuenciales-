@@ -78,6 +78,8 @@ No incluir condicionales (if, else, elif), bucles (for, while), funciones defini
 No incluir comentarios, explicaciones externas, ni formato Markdown.
 
 Responder únicamente con el objeto JSON, sin texto adicional.
+
+Asegurate de que los inputs resivan datos en el formato correcto (en caso de enteros con un int() o flotantes con un float(), de forma base resiven de tipo cadena).
 """
 
 # =============================
