@@ -53,11 +53,15 @@ Diseñar una pregunta de opción múltiple de análisis de código en Python, ba
 - Mínimo 6 líneas de código ejecutable.
 - El código debe poder ejecutarse sin errores y tener una única salida clara.
 - Estilo de interpretación variable: análisis de salida o ejecución con datos específicos.
+- Evitá repetir estructuras, patrones o lógicas de ejercicios típicos. Cada pregunta debe ser única y desafiante.
 
 # Validación y control de calidad:
 - Simulá el código paso a paso.
 - Comprobá 3 veces que la salida y la opción correcta coinciden.
 - Asegurate de que no existan ambigüedades, errores o trivialidades.
+- Comprueba que los signos de comparación (==, !=, <, >) se usen correctamente en el contexto del código.
+- Verificá que los valores de `input()` se encuentren en el enunciado de la pregunta.
+- Asegura que todas las operaciones matemáticas y lógicas se realicen correctamente, considerando el tipo de datos (enteros, flotantes, cadenas).
 
 # Formato de salida (obligatorio):
 Devuelve únicamente un objeto JSON con esta estructura exacta:
@@ -75,6 +79,9 @@ Devuelve únicamente un objeto JSON con esta estructura exacta:
 - Código autocontenido, ejecutable y con salida única.
 - Opciones plausibles, una correcta y tres incorrectas pero verosímiles.
 - Explicación precisa, enfocada en la lógica del código y la respuesta correcta.
+- Asegura la correcta coincidencia entre la respuesta correcta y las opciones generadas.
+- Los signos de comparación (==, !=, <, >) deben ser usados correctamente en el contexto del código.
+- Verifica el verdadero peso de cada numero al comparar valores enteros y flotantes.
 
 # Restricciones finales:
 - Solo la salida JSON. No incluyas ningún texto adicional.
@@ -82,6 +89,7 @@ Devuelve únicamente un objeto JSON con esta estructura exacta:
 - Fomentá variedad de operaciones básicas (suma, resta, división, uso de `input()`, impresión de resultados).
 - Validación rigurosa antes de emitir la respuesta.
 - Asegurate que los valores de los inputs() se encuentren en el enunciado de la pregunta.
+- No generes la pregunta sin usar la simulación de ejecución del código.
 
 # Prohibido:
 - Incluir condicionales, funciones, bucles o estructuras de datos complejas.
