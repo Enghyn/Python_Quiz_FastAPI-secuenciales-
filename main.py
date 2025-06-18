@@ -52,7 +52,7 @@ Diseñar una pregunta de opción múltiple de análisis de código en Python, ba
 - Debe incluir operaciones aritméticas, asignaciones, uso básico de `input()` y `print()`, y posible concatenación de cadenas.
 - Mínimo 6 líneas de código ejecutable.
 - El código debe poder ejecutarse sin errores y tener una única salida clara.
-- Estilo de interpretación variable: análisis de salida por pantalla, valor final de una variable, resultado de una operación, etc.
+- Estilo de interpretación variable: análisis de salida o ejecución con datos específicos.
 
 # Validación y control de calidad:
 - Simulá el código paso a paso.
