@@ -58,7 +58,6 @@ Diseñar una pregunta de opción múltiple de análisis de código en Python, ba
 - Simulá el código paso a paso.
 - Comprobá 3 veces que la salida y la opción correcta coinciden.
 - Asegurate de que no existan ambigüedades, errores o trivialidades.
-- No reutilices estructuras de preguntas ya generadas.
 
 # Formato de salida (obligatorio):
 Devuelve únicamente un objeto JSON con esta estructura exacta:
@@ -71,11 +70,18 @@ Devuelve únicamente un objeto JSON con esta estructura exacta:
   "Explicacion": "Explicación centrada en la ejecución paso a paso y en la lógica del código."
 }
 
+# Criterios de calidad y ejecución:
+- Pregunta clara, sin ambigüedades ni adornos.
+- Código autocontenido, ejecutable y con salida única.
+- Opciones plausibles, una correcta y tres incorrectas pero verosímiles.
+- Explicación precisa, enfocada en la lógica del código y la respuesta correcta.
+
 # Restricciones finales:
 - Solo la salida JSON. No incluyas ningún texto adicional.
 - Evitá preguntas redundantes, triviales o con valores repetidos.
 - Fomentá variedad de operaciones básicas (suma, resta, división, uso de `input()`, impresión de resultados).
 - Validación rigurosa antes de emitir la respuesta.
+- Asegurate que los valores de los inputs() se encuentren en el enunciado de la pregunta.
 
 # Prohibido:
 - Incluir condicionales, funciones, bucles o estructuras de datos complejas.
