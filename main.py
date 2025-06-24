@@ -1,7 +1,7 @@
 # =============================
 # CONFIGURACIÓN Y DEPENDENCIAS
 # =============================
-from fastapi import FastAPI, Request, Form, Response, Cookie
+from fastapi import FastAPI, Request, Form, Response
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from itsdangerous import URLSafeSerializer, BadSignature
@@ -22,77 +22,91 @@ GENAI_API_KEY = os.getenv("GENAI_API_KEY")
 # PROMPT PARA GEMINI
 # =============================
 PROMPT = """
-# Rol del sistema:
-Actuás como un generador experto de ejercicios de análisis de código en Python. Tenés una sólida formación en pedagogía, didáctica computacional y programación. Tu objetivo es generar preguntas tipo test (múltiple opción) para estudiantes principiantes que recién comienzan a programar. Cada pregunta debe fomentar la comprensión de instrucciones secuenciales y la interpretación de resultados básicos de un programa.
+# SYSTEM PROMPT: Generador de preguntas de análisis de código Python SECUENCIALES para exámenes universitarios
 
-# Objetivo:
-Diseñar una pregunta de opción múltiple de análisis de código en Python, basada en un fragmento autocontenido de código secuencial, cumpliendo estrictos criterios de calidad, ejecución y formato.
+## Rol y contexto
+Eres un generador experto de preguntas de opción múltiple para análisis de código Python, orientado a estudiantes universitarios principiantes. Tu objetivo es crear preguntas claras, perfectas para novatos que están aprendiendo, enfocadas exclusivamente en ejercicios SECUENCIALES (sin condicionales, sin bucles, sin recursividad, sin estructuras de datos complejas). Actúa siempre como un generador profesional, crítico y riguroso, y nunca como un asistente conversacional.
 
-# Estructura de generación (paso a paso):
-1. **Generá un bloque de código Python autocontenido** que cumpla con los criterios detallados en la sección "Criterios del código".
-2. **Simulá mentalmente su ejecución** (o ejecutalo internamente) y determiná con exactitud su salida o el valor final de una variable clave.
-3. **Redactá una pregunta clara**, basada en ese código, sin adornos ni ambigüedades. El enunciado debe estar contextualizado para análisis de código secuencial.
-4. **Generá 4 opciones plausibles**, una de ellas correcta. Las incorrectas deben ser verosímiles.
-5. **Verificá que la respuesta correcta coincida EXACTAMENTE con una de las opciones.**
-6. **Escribí una explicación concisa y precisa**, enfocada en la lógica secuencial del código y la razón por la que la opción correcta es válida.
-7. **Devolvé solo un objeto JSON válido**, con los campos especificados. No agregues texto adicional ni comentarios.
+## Temáticas previas
+- El valor de 'tematicas_previas' es una lista de las temáticas usadas en los ejercicios anteriores. Si está vacía, es la primera vez que generas una pregunta. Si tiene valores, debes evitar repetir las mismas temáticas principales o secundarias usadas recientemente.
 
-# Reglas estrictas de generación (no ignorar):
-1. Antes de generar las opciones, SIMULÁ paso a paso la ejecución del código. Para cada línea, analizá el flujo, valores intermedios y salida.
-2. La opción correcta DEBE COINCIDIR EXACTAMENTE con la salida real del código. Si no podés verificar esto mentalmente, no generes la pregunta.
-3. No generes explicaciones que contradigan las opciones. Toda explicación debe confirmar directamente el valor de la respuesta correcta.
-4. Si hay discrepancia entre el resultado del código y las opciones, REINICIÁ el proceso desde el punto 1. No te autocorrijas al final.
+## Objetivo
+Generar un objeto JSON que contenga:
+- Un bloque de código Python autocontenido, válido y bien formateado.
+- Un enunciado claro y técnico, enfocado en la ejecución del código.
+- Cuatro opciones plausibles, solo una correcta.
+- La respuesta correcta, que debe coincidir exactamente con una de las opciones.
+- Una explicación precisa, centrada en la lógica y ejecución del código.
+- Un campo adicional 'tematicas_usadas' (lista de las dos temáticas elegidas para este ejercicio).
 
-# Criterios del código:
-- Solo estructuras secuenciales: sin condicionales (`if`), sin bucles (`for`, `while`) ni funciones definidas por el usuario.
+## Instrucciones estrictas de generación y validación
+1. **Elige una temática principal y una temática secundaria de la siguiente lista para generar el ejercicio, seleccionando ambas de forma aleatoria y equitativa, no priorices las primeras opciones, y evita repetir temáticas presentes en 'tematicas_previas'**:
+   Temáticas posibles: concatenación de cadenas, manipulación de strings, operaciones entre tipos distintos (int, float, str), intercambio de valores entre variables, cálculos matemáticos simples, nombre, altura, precio de producto (con precios float o int), peso, edad, o cualquier otro contexto sencillo y relevante para principiantes.
+   Elige una temática principal y una secundaria distintas, y combina ambas en el ejercicio (por ejemplo: manipulación de strings + cálculos matemáticos simples, o intercambio de valores + operaciones entre tipos). Si 'tematicas_previas' está vacía, puedes elegir cualquier combinación. Si tiene valores, prioriza combinaciones nuevas.
+2. **No generes preguntas sobre edad, precio, altura o peso salvo que hayan pasado al menos 3 ejercicios de otras temáticas** (si no tienes contexto previo, actúa como si la última temática usada fuera distinta a estas).
+3. **No repitas la combinación 'nombre + concatenación de cadenas' en ejercicios consecutivos ni frecuentes. Alterna combinaciones inusuales y variadas.**
+4. **Varía los valores usados en los ejercicios**:
+   - Si usas nombres, elige uno diferente y poco frecuente en cada ejercicio, evitando repeticiones y nombres comunes como "Ana García". Alterna entre nombres masculinos, femeninos, neutros o incluso palabras que no sean nombres de personas.
+   - Si usas números, cadenas u otros valores, varíalos en cada ejercicio y evita repetirlos en ejercicios consecutivos.
+5. **Genera un código Python autocontenido** que cumpla con los criterios de la sección "Criterios del código". El código debe ser único, claro y adecuado para principiantes, sin condicionales, bucles, recursividad ni estructuras de datos complejas.
+6. Prohibido ejercicios de recursividad, bucles, condicionales o manipulación de listas, tuplas, conjuntos o diccionarios.
+7. Si usas input(), el valor debe ser explícito en el enunciado y ser aleatorio entre 1 y 20.
+8. No repitas valores de entrada ni de salida en ejercicios consecutivos. Los valores más repetidos (1, 6, 12, 15, 2, 3, 5, 7) deben evitarse como respuestas o inputs frecuentes.
+9. No repitas estructuras, nombres de variables ni patrones lógicos.
+10. **Simula mentalmente la ejecución del código** y verifica paso a paso la lógica, los cálculos y los signos comparadores. No cometas errores aritméticos ni de comparación.
+11. **Genera 4 opciones plausibles**, una correcta y tres incorrectas pero verosímiles. La respuesta correcta debe coincidir exactamente con la salida real del código.
+12. **Valida rigurosamente**:
+   - Comprueba tres veces que la respuesta correcta es la única válida y coincide con la salida real.
+   - Si detectas cualquier error, inconsistencia o ambigüedad, reintenta hasta 3 veces antes de proceder con la mejor versión disponible.
+   - No generes preguntas donde la explicación contradiga la opción correcta o corrija el resultado después de mostrar las opciones.
+   - No generes preguntas triviales, redundantes ni con resultados evidentes.
+13. **La explicación debe ser precisa y lógica**, nunca corregir ni contradecir la opción correcta.
+14. **Devuelve solo el objeto JSON** con la estructura especificada, sin ningún texto adicional.
+
+## Criterios del código
 - Sintaxis Python válida, compatible con versiones recientes.
-- Nombres de variables en español, con estilo *camelCase*.
-- Código indentado con 4 espacios (sin tabulaciones).
-- Sin uso de librerías externas ni funciones avanzadas.
-- Debe incluir operaciones aritméticas, asignaciones, uso básico de `input()` y `print()`, y posible concatenación de cadenas.
-- Mínimo 6 líneas de código ejecutable.
-- El código debe poder ejecutarse sin errores y tener una única salida clara.
-- Estilo de interpretación variable: análisis de salida o ejecución con datos específicos.
-- Evitá repetir estructuras, patrones o lógicas de ejercicios típicos. Cada pregunta debe ser única y desafiante.
+- Solo ejercicios SECUENCIALES: prohibido el uso de condicionales (if, else, elif), bucles (for, while), recursividad, funciones definidas por el usuario, y estructuras de datos (listas, tuplas, conjuntos, diccionarios).
+- Nombres de variables en español, usando camelCase.
+- Indentación de 4 espacios, sin tabulaciones.
+- Sin librerías externas.
+- Entre 3 y 8 líneas ejecutables (sin contar comentarios ni líneas en blanco).
+- Solo operaciones aritméticas, asignaciones, uso de input() (con valor explícito en el enunciado), print(), conversiones de tipo, concatenación de cadenas, intercambio de valores entre variables, y operaciones que mezclen tipos (int, float, str).
+- Varía operadores, valores, lógica y contexto en cada ejercicio.
 
-# Validación y control de calidad:
-- Simulá el código paso a paso.
-- Comprobá 3 veces que la salida y la opción correcta coinciden.
-- Asegurate de que no existan ambigüedades, errores o trivialidades.
-- Comprueba que los signos de comparación (==, !=, <, >) se usen correctamente en el contexto del código.
-- Verificá que los valores de `input()` se encuentren en el enunciado de la pregunta.
-- Asegura que todas las operaciones matemáticas y lógicas se realicen correctamente, considerando el tipo de datos (enteros, flotantes, cadenas).
+## Validación y control de calidad
+- Simula el código paso a paso y valida todos los cálculos y comparaciones.
+- Comprueba tres veces que la respuesta correcta es la única válida y coincide con la salida real.
+- No generes preguntas con errores aritméticos, de comparación o de lógica.
+- No generes preguntas donde la explicación contradiga la opción correcta.
+- Si detectas cualquier error, reinicia el proceso desde el paso 1.
 
-# Formato de salida (obligatorio):
+## Ejemplos de variedad esperada
+- Ejemplo 1: Un ejercicio que combine manipulación de strings y operaciones entre tipos.
+- Ejemplo 2: Un ejercicio que combine intercambio de valores y cálculos matemáticos simples.
+- Ejemplo 3: Un ejercicio que combine concatenación de cadenas y nombre (usando nombres poco frecuentes o palabras no personales).
+- Ejemplo 4: Un ejercicio que combine operaciones entre tipos y manipulación de strings, sin usar nombres.
+- Ejemplo 5: Un ejercicio que combine cálculos matemáticos simples y intercambio de valores, sin usar cadenas.
+
+## Formato de salida (obligatorio)
 Devuelve únicamente un objeto JSON con esta estructura exacta:
-
 {
-  "Pregunta": "Texto claro, sin adornos. Enunciado técnico enfocado en la ejecución del código.",
   "Codigo": "Bloque de código Python autocontenido, bien indentado, formateado y funcional.",
-  "Respuestas": ["Opción A", "Opción B", "Opción C", "Opción D"],
+  "Pregunta": "Texto claro, sin adornos. Enunciado técnico enfocado en la ejecución del código.",
   "Respuesta correcta": "Debe coincidir exactamente con una de las opciones anteriores.",
-  "Explicacion": "Explicación centrada en la ejecución paso a paso y en la lógica del código."
+  "Respuestas": ["Opción A", "Opción B", "Opción C", "Opción D"],
+  "Explicacion": "Explicación centrada en la ejecución paso a paso y en la lógica del código.",
+  "tematicas_usadas": ["tematica_principal", "tematica_secundaria"]
 }
 
-# Criterios de calidad y ejecución:
-- Pregunta clara, sin ambigüedades ni adornos.
-- Código autocontenido, ejecutable y con salida única.
-- Opciones plausibles, una correcta y tres incorrectas pero verosímiles.
-- Explicación precisa, enfocada en la lógica del código y la respuesta correcta.
-- Asegura la correcta coincidencia entre la respuesta correcta y las opciones generadas.
-- Los signos de comparación (==, !=, <, >) deben ser usados correctamente en el contexto del código.
-- Verifica el verdadero peso de cada numero al comparar valores enteros y flotantes.
-
-# Restricciones finales:
+## Restricciones finales
 - Solo la salida JSON. No incluyas ningún texto adicional.
-- Evitá preguntas redundantes, triviales o con valores repetidos.
-- Fomentá variedad de operaciones básicas (suma, resta, división, uso de `input()`, impresión de resultados).
+- Evita preguntas redundantes, triviales o con valores repetidos.
+- Fomenta variedad estructural, temática y de lógica en los códigos.
 - Validación rigurosa antes de emitir la respuesta.
-- Asegurate que los valores de los inputs() se encuentren en el enunciado de la pregunta.
-- No generes la pregunta sin usar la simulación de ejecución del código.
+- El código generado no debe superar las 8 líneas ejecutables.
+- No generes la pregunta sin simular la ejecución del código.
 
-# Prohibido:
-- Incluir condicionales, funciones, bucles o estructuras de datos complejas.
+## Prohibido
 - Generar salidas sin verificarlas.
 - Producir preguntas con explicaciones que corrigen opciones incorrectas.
 - Variar el formato. Solo el JSON especificado.
@@ -134,14 +148,18 @@ def es_pregunta_valida(pregunta):
 # =============================
 # GENERACIÓN Y OBTENCIÓN DE PREGUNTAS
 # =============================
-def generar_pregunta():
+def generar_pregunta(tematicas_previas=None):
     """
-    Llama a Gemini para generar una pregunta nueva.
+    Llama a Gemini para generar una pregunta nueva, pasando las temáticas previas.
     Limpia el texto y lo convierte a un diccionario Python.
     """
+    if tematicas_previas is None:
+        tematicas_previas = []
+    # Construye el prompt dinámicamente con las temáticas previas
+    prompt_con_tematicas = PROMPT + f"\n\n# tematicas_previas = {json.dumps(tematicas_previas, ensure_ascii=False)}\n"
     response = client.models.generate_content(
         model="gemini-2.0-flash-lite", 
-        contents=PROMPT
+        contents=prompt_con_tematicas
     )
     try:
         text = response.text.strip()
@@ -164,13 +182,35 @@ def generar_pregunta():
             "codigo": pregunta_json.get("Codigo"),
             "respuestas": respuestas,
             "respuesta_correcta": pregunta_json.get("Respuesta correcta"),
-            "explicacion": pregunta_json.get("Explicacion", "")
+            "explicacion": pregunta_json.get("Explicacion", ""),
+            "tematicas_usadas": pregunta_json.get("tematicas_usadas", [])
         }
         if not es_pregunta_valida(pregunta):
             return {"error": "Pregunta inválida o incompleta", "detalle": "Faltan campos o formato incorrecto", "texto": text}
         return pregunta
     except Exception as e:
         return {"error": "No se pudo extraer el JSON", "detalle": str(e), "texto": response.text}
+
+async def obtener_pregunta_cache_async(tematicas_previas=None):
+    """
+    Obtiene una pregunta del cache de forma no bloqueante para el event loop.
+    Si el cache está vacío, genera una pregunta en caliente.
+    """
+    loop = asyncio.get_running_loop()
+    try:
+        pregunta = await loop.run_in_executor(None, lambda: pregunta_cache.get(timeout=10))
+        if not es_pregunta_valida(pregunta):
+            return generar_pregunta(tematicas_previas)
+        return pregunta
+    except Exception:
+        pregunta = generar_pregunta(tematicas_previas)
+        return pregunta
+
+# =============================
+# VARIABLE GLOBAL PARA TEMÁTICAS PREVIAS DEL HILO DE PRECARGA
+# =============================
+tematicas_previas_global = []
+tematicas_lock = threading.Lock()
 
 # =============================
 # HILO DE PRECARGA DE PREGUNTAS
@@ -179,14 +219,21 @@ def precargar_preguntas():
     """
     Hilo en segundo plano que mantiene el cache de preguntas lleno.
     Solo consulta la API si el cache baja del umbral.
+    Usa una variable global protegida por lock para tematicas_previas.
     """
+    global tematicas_previas_global
     while True:
         if pregunta_cache.qsize() < CACHE_MIN:
             try:
-                pregunta = generar_pregunta()
+                with tematicas_lock:
+                    tematicas_previas = list(tematicas_previas_global)
+                pregunta = generar_pregunta(tematicas_previas)
                 # Solo la guarda si es válida
                 if es_pregunta_valida(pregunta):
                     pregunta_cache.put(pregunta)
+                    # Actualiza la variable global de tematicas_previas
+                    with tematicas_lock:
+                        tematicas_previas_global = pregunta.get("tematicas_usadas", [])
                 time.sleep(5)  # Espera 5 segundos antes de volver a intentar
             except Exception as e:
                 # Si es un error de cuota, espera más tiempo
@@ -199,21 +246,6 @@ def precargar_preguntas():
 
 # Inicia el hilo de precarga al arrancar la app
 threading.Thread(target=precargar_preguntas, daemon=True).start()
-
-async def obtener_pregunta_cache_async():
-    """
-    Obtiene una pregunta del cache de forma no bloqueante para el event loop.
-    Si el cache está vacío, genera una pregunta en caliente.
-    """
-    loop = asyncio.get_running_loop()
-    try:
-        pregunta = await loop.run_in_executor(None, lambda: pregunta_cache.get(timeout=10))
-        if not es_pregunta_valida(pregunta):
-            return generar_pregunta()
-        return pregunta
-    except Exception:
-        pregunta = generar_pregunta()
-        return pregunta
 
 # =============================
 # FASTAPI APP Y RUTAS
@@ -260,36 +292,6 @@ def clear_session(response: Response):
     Elimina la cookie de sesión.
     """
     response.delete_cookie(SESSION_COOKIE)
-    response.delete_cookie("quiz_errores")
-
-def set_errores_cookie(response: Response, errores: list):
-    """
-    Serializa y guarda la lista de errores en una cookie separada, solo para mostrar en resultados.
-    """
-    # Limita el tamaño serializando solo los campos esenciales
-    errores_livianos = []
-    for err in errores:
-        errores_livianos.append({
-            'pregunta': err.get('pregunta', ''),
-            'codigo': err.get('codigo', ''),
-            'respuesta_correcta': err.get('respuesta_correcta', ''),
-            'respuesta_usuario': err.get('respuesta_usuario', ''),
-            'explicacion': err.get('explicacion', '')
-        })
-    cookie_value = serializer.dumps(errores_livianos)
-    response.set_cookie("quiz_errores", cookie_value, max_age=60*60*10)
-
-def get_errores_cookie(request: Request):
-    """
-    Recupera la lista de errores desde la cookie separada.
-    """
-    quiz_errores = request.cookies.get("quiz_errores")
-    if not quiz_errores:
-        return []
-    try:
-        return serializer.loads(quiz_errores)
-    except BadSignature:
-        return []
 
 @app.get('/', name="inicio")
 def inicio(request: Request):
@@ -309,7 +311,7 @@ async def quiz_get(request: Request):
     """
     session = get_session(request)
 
-    if not all(k in session for k in ['puntaje', 'total', 'inicio', 'pregunta_actual', 'errores']) or session == {}:
+    if not all(k in session for k in ['puntaje', 'total', 'inicio', 'pregunta_actual']) or session == {}:
         nueva_pregunta = await obtener_pregunta_cache_async()
         intentos = 0
         while not es_pregunta_valida(nueva_pregunta) and intentos < 10:
@@ -351,7 +353,6 @@ async def quiz_get(request: Request):
     )
     
     set_session(response, session)
-    print(session['pregunta_actual']['respuesta_correcta'])
     return response
 
 @app.post('/quiz')
@@ -364,9 +365,6 @@ async def quiz_post(request: Request, respuesta: str = Form(...)):
     session = get_session(request)
     if not all(k in session for k in ['puntaje', 'total', 'inicio', 'pregunta_actual']):
         return RedirectResponse(url='/', status_code=303)
-
-    # Recupera errores de la cookie (si existen)
-    errores = get_errores_cookie(request)
 
     # Si la pregunta actual no es válida, reintenta obtener otra
     intentos = 0
@@ -388,14 +386,6 @@ async def quiz_post(request: Request, respuesta: str = Form(...)):
 
     if seleccion and seleccion.strip() == correcta.strip():
         session['puntaje'] += 1
-    else:
-        errores.append({
-            'pregunta': session['pregunta_actual']['pregunta'],
-            'codigo': session['pregunta_actual']['codigo'],
-            'respuesta_correcta': correcta,
-            'explicacion': explicacion,
-            'respuesta_usuario': seleccion
-        })
 
     if session['total'] >= 10:
         tiempo = int(time.time() - session['inicio'])
@@ -405,7 +395,6 @@ async def quiz_post(request: Request, respuesta: str = Form(...)):
             status_code=303
         )
         clear_session(response)
-        set_errores_cookie(response, errores)
         return response
 
     # Si no ha terminado, obtiene una nueva pregunta y actualiza la sesión
@@ -424,7 +413,6 @@ async def quiz_post(request: Request, respuesta: str = Form(...)):
     session['pregunta_actual'] = nueva_pregunta
     response = RedirectResponse(url='/quiz', status_code=303)
     set_session(response, session)
-    set_errores_cookie(response, errores)
     return response
 
 @app.get('/resultado')
@@ -433,10 +421,10 @@ def resultado(request: Request, correctas: int = 0, tiempo: int = 0):
     Ruta para mostrar el resultado final.
     Recupera los errores desde la cookie temporal y los muestra junto al puntaje y tiempo.
     """
-    errores = get_errores_cookie(request)
+    # Recupera errores del localStorage usando JavaScript en resultado.html
     response = templates.TemplateResponse(
         'resultado.html',
-        {'request': request, 'correctas': correctas, 'tiempo': tiempo, 'errores': errores}
+        {'request': request, 'correctas': correctas, 'tiempo': tiempo, 'errores': []}  # errores vacío, se cargan en el frontend
     )
     return response
 

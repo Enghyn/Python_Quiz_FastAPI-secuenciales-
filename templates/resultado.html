@@ -141,5 +141,110 @@
         </ul>
     </div>
     {% endif %}
+
+    <script>
+    // Cargar errores desde localStorage y renderizarlos de forma segura (sin XSS)
+    document.addEventListener('DOMContentLoaded', function() {
+        let errores = [];
+        try { errores = JSON.parse(localStorage.getItem('quiz_errores') || '[]'); } catch {}
+        if (errores.length === 0) return;
+        const contenedor = document.createElement('div');
+        contenedor.className = 'resultado-container';
+        contenedor.style.marginTop = '32px';
+        contenedor.style.maxWidth = '700px';
+        contenedor.style.width = '98vw';
+
+        const titulo = document.createElement('h2');
+        titulo.textContent = 'Preguntas respondidas incorrectamente';
+        contenedor.appendChild(titulo);
+
+        const ul = document.createElement('ul');
+        ul.style.listStyle = 'none';
+        ul.style.padding = '0';
+
+        errores.forEach((error, idx) => {
+            const li = document.createElement('li');
+            li.style.marginBottom = '38px';
+            li.style.borderBottom = '1px solid #e0e7ff';
+            li.style.paddingBottom = '28px';
+            li.style.background = '#f8faff';
+            li.style.borderRadius = '16px';
+            li.style.boxShadow = '0 2px 10px rgba(79,110,247,0.06)';
+            li.style.paddingTop = '18px';
+
+            const divNum = document.createElement('div');
+            divNum.style.fontWeight = '600';
+            divNum.style.color = '#c0392b';
+            divNum.style.marginBottom = '8px';
+            divNum.style.fontSize = '1.15em';
+            divNum.textContent = `Pregunta ${idx+1}:`;
+            li.appendChild(divNum);
+
+            const divPregunta = document.createElement('div');
+            divPregunta.style.marginBottom = '10px';
+            divPregunta.style.color = '#2d3a4a';
+            divPregunta.style.fontSize = '1.08em';
+            divPregunta.textContent = error.pregunta;
+            li.appendChild(divPregunta);
+
+            const divCodigo = document.createElement('div');
+            divCodigo.style.overflowX = 'auto';
+            divCodigo.style.background = '#f4f6fa';
+            divCodigo.style.borderRadius = '8px';
+            divCodigo.style.padding = '12px';
+            divCodigo.style.fontSize = '1.04em';
+            divCodigo.style.marginBottom = '10px';
+            divCodigo.style.color = '#222';
+            divCodigo.style.maxWidth = '100%';
+            divCodigo.style.textAlign = 'left';
+            divCodigo.style.display = 'block';
+            const pre = document.createElement('pre');
+            pre.style.margin = '0';
+            pre.style.fontFamily = "'Fira Mono', 'Consolas', 'Menlo', monospace";
+            pre.style.whiteSpace = 'pre';
+            pre.style.tabSize = '4';
+            pre.style.textAlign = 'left';
+            pre.style.background = 'none';
+            pre.style.boxShadow = 'none';
+            pre.textContent = (error.codigo || '').replace(/\t/g, '    ');
+            divCodigo.appendChild(pre);
+            li.appendChild(divCodigo);
+
+            const divRespUsuario = document.createElement('div');
+            divRespUsuario.className = 'respuesta-usuario';
+            divRespUsuario.style.marginBottom = '6px';
+            divRespUsuario.style.color = '#555';
+            divRespUsuario.innerHTML = 'Tu respuesta: <b></b>';
+            divRespUsuario.querySelector('b').textContent = error.respuesta_usuario;
+            li.appendChild(divRespUsuario);
+
+            const divRespCorrecta = document.createElement('div');
+            divRespCorrecta.className = 'respuesta-correcta';
+            divRespCorrecta.style.marginBottom = '6px';
+            divRespCorrecta.style.color = '#4f6ef7';
+            divRespCorrecta.innerHTML = 'Respuesta correcta: <b></b>';
+            divRespCorrecta.querySelector('b').textContent = error.respuesta_correcta;
+            li.appendChild(divRespCorrecta);
+
+            const divExp = document.createElement('div');
+            divExp.style.marginTop = '10px';
+            divExp.style.color = '#222';
+            divExp.style.background = '#eaf1ff';
+            divExp.style.borderRadius = '6px';
+            divExp.style.padding = '10px 14px';
+            divExp.style.fontSize = '1.01em';
+            divExp.style.textAlign = 'left';
+            const bExp = document.createElement('b');
+            bExp.textContent = 'Explicación:';
+            divExp.appendChild(bExp);
+            divExp.appendChild(document.createTextNode(' ' + (error.explicacion || '')));
+            li.appendChild(divExp);
+
+            ul.appendChild(li);
+        });
+        contenedor.appendChild(ul);
+        document.body.appendChild(contenedor);
+    });
+    </script>
 </body>
 </html>
