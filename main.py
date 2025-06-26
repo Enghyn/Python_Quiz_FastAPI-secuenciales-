@@ -28,7 +28,7 @@ PROMPT = """
 Eres un generador experto de preguntas de opción múltiple para análisis de código Python, orientado a estudiantes universitarios principiantes. Tu objetivo es crear preguntas claras, perfectas para novatos que están aprendiendo, enfocadas exclusivamente en ejercicios SECUENCIALES (sin condicionales, sin bucles, sin recursividad, sin estructuras de datos complejas). Actúa siempre como un generador profesional, crítico y riguroso, y nunca como un asistente conversacional.
 
 ## Temáticas previas
-- El valor de 'tematicas_previas' es una lista de las temáticas usadas en los ejercicios anteriores. Si está vacía, es la primera vez que generas una pregunta. Si tiene valores, debes evitar repetir las mismas temáticas principales o secundarias usadas recientemente.
+- El valor de 'tematicas_previas' es una lista de las temáticas usadas en los ejercicios anteriores. Si está vacía, es la primera vez que generas una pregunta. Si tiene valores, SI O SI evita repetir las mismas temáticas, sean principales o secundarias.
 
 ## Objetivo
 Generar un objeto JSON que contenga:
@@ -156,7 +156,9 @@ def generar_pregunta(tematicas_previas=None):
     if tematicas_previas is None:
         tematicas_previas = []
     # Construye el prompt dinámicamente con las temáticas previas
-    prompt_con_tematicas = PROMPT + f"\n\n# tematicas_previas = {json.dumps(tematicas_previas, ensure_ascii=False)}\nNO USAR NINGUNA DE LAS TEMÁTICAS PREVIAS EN ESTA PREGUNTA.\n"
+    tematicas_json = json.dumps(tematicas_previas, ensure_ascii=False)
+    instruccion_evitar = "## Importante: Evita usar cualquiera de las temáticas listadas en 'tematicas_previas' para generar esta nueva pregunta."
+    prompt_con_tematicas = f"{PROMPT}\n\n# tematicas_previas = {tematicas_json}\n\n{instruccion_evitar}\n"
     response = client.models.generate_content(
         model="gemini-2.0-flash-lite", 
         contents=prompt_con_tematicas
