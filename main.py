@@ -156,7 +156,7 @@ def generar_pregunta(tematicas_previas=None):
     if tematicas_previas is None:
         tematicas_previas = []
     # Construye el prompt dinámicamente con las temáticas previas
-    prompt_con_tematicas = PROMPT + f"\n\n# tematicas_previas = {json.dumps(tematicas_previas, ensure_ascii=False)}\n"
+    prompt_con_tematicas = PROMPT + f"\n\n# tematicas_previas = {json.dumps(tematicas_previas, ensure_ascii=False)}\nNO USAR NINGUNA DE LAS TEMÁTICAS PREVIAS EN ESTA PREGUNTA.\n"
     response = client.models.generate_content(
         model="gemini-2.0-flash-lite", 
         contents=prompt_con_tematicas
