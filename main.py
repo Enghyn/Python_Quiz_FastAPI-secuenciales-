@@ -160,7 +160,7 @@ def generar_pregunta(tematicas_previas=None):
     instruccion_evitar = "## Importante: Evita usar cualquiera de las temáticas listadas en 'tematicas_previas' para generar esta nueva pregunta."
     prompt_con_tematicas = f"{PROMPT}\n\n# tematicas_previas = {tematicas_json}\n\n{instruccion_evitar}\n"
     response = client.models.generate_content(
-        model="gemini-2.0-flash-lite", 
+        model="gemini-2.5-flash-lite-preview-06-17", 
         contents=prompt_con_tematicas
     )
     try:
