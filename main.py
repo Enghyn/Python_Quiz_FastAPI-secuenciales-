@@ -53,7 +53,9 @@ Generar un objeto JSON que contenga:
 7. Si usas input(), el valor debe ser explícito en el enunciado y ser aleatorio entre 1 y 20.
 8. No repitas valores de entrada ni de salida en ejercicios consecutivos. Los valores más repetidos (1, 6, 12, 15, 2, 3, 5, 7) deben evitarse como respuestas o inputs frecuentes.
 9. No repitas estructuras, nombres de variables ni patrones lógicos.
-10. **Simula mentalmente la ejecución del código** y verifica paso a paso la lógica, los cálculos y los signos comparadores. No cometas errores aritméticos ni de comparación.
+10. **Antes de escribir la explicación, debes estar completamente seguro de la salida que tendrá el ejercicio. Simula mentalmente la ejecución del código y verifica paso a paso la lógica, los cálculos y los signos comparadores. No cometas errores lógicos ni de comparación.**
+    - **Primero, simula el ejercicio 3 veces antes de decidir cuál es la opción correcta.**
+    - **Solo cuando estés completamente seguro y hayas validado la opción correcta, genera la explicación del ejercicio.**
 11. **Genera 4 opciones plausibles**, una correcta y tres incorrectas pero verosímiles. La respuesta correcta debe coincidir exactamente con la salida real del código.
 12. **Valida rigurosamente**:
    - Comprueba tres veces que la respuesta correcta es la única válida y coincide con la salida real.
@@ -62,6 +64,18 @@ Generar un objeto JSON que contenga:
    - No generes preguntas triviales, redundantes ni con resultados evidentes.
 13. **La explicación debe ser precisa y lógica**, nunca corregir ni contradecir la opción correcta. **No incluyas frases como 'hay un error en mi simulación', 'procederé a corregirlo', 're-simulación', ni ninguna referencia a errores, correcciones o dudas en la explicación. La explicación debe ser siempre directa, definitiva y alineada con la respuesta correcta.**
 14. **Devuelve solo el objeto JSON** con la estructura especificada, sin ningún texto adicional.
+
+## Checklist obligatorio de validación y simulación exhaustiva
+Antes de decidir la respuesta correcta y la explicación, sigue este checklist:
+- [ ] Simula mentalmente la ejecución del código al menos 3 veces, línea por línea, comprobando el valor de cada variable en cada iteración.
+- [ ] Verifica que la salida producida por el código coincide exactamente con la respuesta correcta propuesta.
+- [ ] Asegúrate de que ninguna de las opciones incorrectas pueda ser confundida con la correcta tras la simulación.
+- [ ] Revisa que la explicación sea coherente, definitiva y no contenga frases de corrección, duda o simulación intermedia.
+- [ ] Confirma que el campo "Codigo" no contiene delimitadores de bloque de código ni comentarios extra.
+- [ ] Valida que los nombres de variables, valores y lógica no se repiten respecto a ejercicios anteriores.
+- [ ] Comprueba que la pregunta no es trivial, redundante ni con resultados evidentes.
+- [ ] Si detectas cualquier error, inconsistencia o ambigüedad, reinicia el proceso de generación hasta 3 veces antes de aceptar la mejor versión disponible.
+- [ ] Solo genera la explicación cuando estés completamente seguro del resultado, sin dudas ni correcciones.
 
 ## Criterios del código
 - Sintaxis Python válida, compatible con versiones recientes.
@@ -90,8 +104,8 @@ Generar un objeto JSON que contenga:
 ## Formato de salida (obligatorio)
 Devuelve únicamente un objeto JSON con esta estructura exacta:
 {
-  "Codigo": "Bloque de código Python autocontenido, bien indentado, formateado y funcional.",
-  "Pregunta": "Texto claro, sin adornos. Enunciado técnico enfocado en la ejecución del código.",
+  "Codigo": "Bloque de código Python autocontenido, bien indentado, formateado y funcional. SOLO el código, sin ningún delimitador de bloque de código (no uses ```python ni ``` ni etiquetas ni comentarios extra).",
+  "Pregunta": "Texto claro, **conciso** y sin adornos. **El enunciado NO debe explicar el flujo, lógica ni pasos internos del código; solo debe mencionar el valor de los inputs si los hay.** Enunciado técnico enfocado en la ejecución del código.",
   "Respuesta correcta": "Debe coincidir exactamente con una de las opciones anteriores.",
   "Respuestas": ["Opción A", "Opción B", "Opción C", "Opción D"],
   "Explicacion": "Explicación centrada en la ejecución paso a paso y en la lógica del código.",
